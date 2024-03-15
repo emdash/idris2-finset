@@ -1,0 +1,10 @@
+[custom.all.finset]
+type = "local"
+path = "."
+ipkg = "finset.ipkg"
+test = "test/test.ipkg"
+
+[custom.all.finset-test]
+type = "local"
+path = "test"
+ipkg = "test.ipkg"

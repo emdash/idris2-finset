@@ -7,6 +7,7 @@ import Data.Fin
 import Data.Finite
 import Data.List
 import Data.List.Elem
+import Data.Nat
 import Decidable.Equality
 import Derive.Finite
 
@@ -91,8 +92,12 @@ empty = Set zeroBits
 
 ||| Return the full bitset
 export
-full : {e : Type} -> Cast Nat b => Representable e b => BitSet e b
-full = Set $ cast {to = b} $ (power 2 (cardinality e)) `minus` 1
+full : {e : Type} -> Neg b => Representable e b => BitSet e b
+full = case isLT (cardinality e) (bitSize) of
+  -- cardinality is less than bitSize, ensure high bits are clear
+  Yes prf => Set $ (bit $ bitsToIndex $ natToFinLT {prf} $ cardinality e) - 1
+  -- cardinality is equal to bitsize, take the fast path
+  No  _   => Set oneBits
 
 ||| Insert a value into the given `BitSet`
 export
@@ -237,3 +242,9 @@ test2 = insert B $ insert C empty
 
 test3 : BitSet Test Bits8
 test3 = test1 `diff` test2
+
+
+data Evil = EvilA | EvilB | EvilC | Bad
+
+Finite Evil where
+  values = [EvilA, EvilB, EvilC] -- oops we forgot one

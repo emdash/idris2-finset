@@ -1,3 +1,29 @@
+{-
+ idris2-finset
+
+ MIT License
+
+ Copyright (c) 2024 emdash
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+-}
+
 ||| Implement sets over small finite types backed by machine integers.
 module Finset
 
@@ -198,6 +224,7 @@ implementation
 where
   show values = "Set \{show $ the (List e) $ asList values}"
 
+
 {--- testing ---}
 
 data Test = A | B | C
@@ -212,16 +239,14 @@ data Test2 = T2 Test Test1
 DecEq Test  where decEq = decEq @{FromEq}
 DecEq Test1 where decEq = decEq @{FromEq}
 DecEq Test2 where decEq = decEq @{FromEq}
-DecEq Evil  where decEq = decEq @{FromEq}
 
 Representable Test  Bits8  where Compat = %search
 Representable Test1 Bits8  where Compat = %search
 Representable Test2 Bits16 where Compat = %search
-Representable Evil  Bits8  where Compat = %search
 
+-- expected, because this type is too large for 8-bits
 failing "While processing right hand side of Compat"
   -- "can't find an implementation for LTE (cardinality Test2) bitSize"
-  -- expected, because this type is too large for 8-bits
   Representable Test2 Bits8 where Compat = %search
 
 test : BitSet Test Bits8

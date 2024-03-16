@@ -203,33 +203,26 @@ where
 data Test = A | B | C
 %runElab derive "Test" [Eq, Ord, Finite, Show]
 
-{- this table is very similar to the one below -}
-Prelude.Uninhabited (A = B) where uninhabited Refl impossible
-Prelude.Uninhabited (A = C) where uninhabited Refl impossible
-Prelude.Uninhabited (B = A) where uninhabited Refl impossible
-Prelude.Uninhabited (B = C) where uninhabited Refl impossible
-Prelude.Uninhabited (C = A) where uninhabited Refl impossible
-Prelude.Uninhabited (C = B) where uninhabited Refl impossible
+data Test1 = One | Two | Three
+%runElab derive "Test1" [Eq, Ord, Finite, Show]
 
-{-
-  it's annoying to have to define DecEq by hand
-  how to remove the need for this?
+data Test2 = T2 Test Test1
+%runElab derive "Test2" [Eq, Ord, Finite, Show]
 
-  to my mind, `Finite a` implies `DecEq a`.
--}
-DecEq Test where
-  decEq A A = Yes Refl
-  decEq A B = No absurd
-  decEq A C = No absurd
-  decEq B A = No absurd
-  decEq B B = Yes Refl
-  decEq B C = No absurd
-  decEq C A = No absurd
-  decEq C B = No absurd
-  decEq C C = Yes Refl
+DecEq Test  where decEq = decEq @{FromEq}
+DecEq Test1 where decEq = decEq @{FromEq}
+DecEq Test2 where decEq = decEq @{FromEq}
+DecEq Evil  where decEq = decEq @{FromEq}
 
-{- How to remove the need to implement for each pair of types? -}
-Representable Test Bits8 where Compat = %search
+Representable Test  Bits8  where Compat = %search
+Representable Test1 Bits8  where Compat = %search
+Representable Test2 Bits16 where Compat = %search
+Representable Evil  Bits8  where Compat = %search
+
+failing "While processing right hand side of Compat"
+  -- "can't find an implementation for LTE (cardinality Test2) bitSize"
+  -- expected, because this type is too large for 8-bits
+  Representable Test2 Bits8 where Compat = %search
 
 test : BitSet Test Bits8
 test = empty
@@ -243,8 +236,5 @@ test2 = insert B $ insert C empty
 test3 : BitSet Test Bits8
 test3 = test1 `diff` test2
 
-
-data Evil = EvilA | EvilB | EvilC | Bad
-
-Finite Evil where
-  values = [EvilA, EvilB, EvilC] -- oops we forgot one
+test4 : BitSet Test2 Bits16
+test4 = insert (T2 A One) $ insert (T2 C Two) $ insert (T2 B Three) empty

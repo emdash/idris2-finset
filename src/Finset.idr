@@ -30,17 +30,13 @@ elemToFin : Elem x xs -> Fin (length xs)
 elemToFin Here      = FZ
 elemToFin (There y) = FS (elemToFin y)
 
-||| A proof that for some `Finite a`, every element of `a` has an
-||| index in `valuesOf`.
+||| A proof that for `Finite a`, every `a` has an index in `valuesOf a`.
 |||
-||| Actually, to be totally correct, we'd need a proof of a unique
-||| index.
+||| XXX: to be totally correct, we'd need a proof of a unique index.
 |||
-||| Ideally, the `Finite` package would handle this for us, via its
-||| derive machinery.
-||| - `assert_total` is cheating here, we just want to crash if this
-|||    ever fails.
-||| - We would not need to introduce the DecEq constraint
+||| Ideally, the `Finite` interface would ensure this.
+|||
+||| Ideally We would not need the DecEq constraint
 inhabited
   : (a : Type)
   -> DecEq a
@@ -107,7 +103,8 @@ export
 insert
   : {e : Type}
   -> Representable e b
-  => e -> BitSet e b
+  => e
+  -> BitSet e b
   -> BitSet e b
 insert x (Set values) = Set $ setBit values (bitPosition x)
 
@@ -116,7 +113,8 @@ export
 remove
   : {e : Type}
   -> Representable e b
-  => e -> BitSet e b
+  => e
+  -> BitSet e b
   -> BitSet e b
 remove x (Set values) = Set $ clearBit values (bitPosition x)
 
@@ -125,7 +123,8 @@ export
 contains
   : {e : Type}
   -> Representable e b
-  => e -> BitSet e b
+  => e
+  -> BitSet e b
   -> Bool
 contains x (Set values) = testBit values (bitPosition x)
 
@@ -184,7 +183,7 @@ asList (Set values) =
 
 ||| Give us a nice string representation
 |||
-||| How do I customize this for the repl?
+||| XXX: How do I customize this for the repl?
 export
 implementation
     {e : Type}

@@ -91,7 +91,8 @@ empty = Set zeroBits
 
 ||| Return the full bitset
 export
-full : Bits b => Representable e b => BitSet e b
+full : {e : Type} -> Cast Nat b => Representable e b => BitSet e b
+full = Set $ cast {to = b} $ (power 2 (cardinality e)) `minus` 1
 
 ||| Insert a value into the given `BitSet`
 export

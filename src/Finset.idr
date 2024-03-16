@@ -1,4 +1,4 @@
-||| Implement sets of small finite types using fast integers
+||| Implement sets over small finite types backed by machine integers.
 module Finset
 
 
@@ -56,11 +56,6 @@ ord
   => a
   -> Cardinality a
 ord x = elemToFin (inhabited a x)
-
-||| If `a` is `Finite`, then every natural number less than the size
-||| of `a` maps to a value of `a`.
-val : Finite a => Cardinality a -> a
-val {a} n = index' (valuesOf a) n
 
 ||| `e` is representable in terms of `b` if the cardinality of `e` is
 ||| less than the `bitSize` of `b`.
@@ -168,6 +163,10 @@ length
 length (Set values) = popCount values
 
 ||| Convert to a list representation
+|||
+||| XXX: this implementation is particularly inefficient as it
+||| constructs and then traverses the entire value set. Surely we can
+||| do better.
 export
 asList
   : {e : Type}
@@ -209,6 +208,8 @@ Prelude.Uninhabited (C = B) where uninhabited Refl impossible
 {-
   it's annoying to have to define DecEq by hand
   how to remove the need for this?
+
+  to my mind, `Finite a` implies `DecEq a`.
 -}
 DecEq Test where
   decEq A A = Yes Refl

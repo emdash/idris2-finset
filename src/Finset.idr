@@ -42,12 +42,12 @@ import Derive.Finite
 %language ElabReflection
 
 
-||| The size of the finite type, as a natural number
+||| The size of the finite type, as a natural number.
 public export
 cardinality : (0 a : Type) -> Finite a => Nat
 cardinality a = length (valuesOf a)
 
-||| The size of the finite type, as `Fin`
+||| A natural number that 'fits inside' the underlying finite type.
 public export
 Cardinality : (0 a : Type) -> Finite a => Type
 Cardinality a = Fin (cardinality a)
@@ -72,10 +72,9 @@ inhabited
   -> Elem x (valuesOf a)
 inhabited a x = case isElem x (valuesOf a) of
   Yes elem => elem
-  No  _    => assert_total $ idris_crash "unlawful implementation of Finite"
+  No  _    => assert_total $ idris_crash "Unlawful implementation of Finite!"
 
-||| If `a` is `Finite`, then every `a` maps to a bounded natural
-||| number.
+||| If `a` is `Finite`, then every `a` maps to a `Fin (cardinality a)`
 ord
   : {a : Type}
   -> DecEq a
@@ -84,10 +83,10 @@ ord
   -> Cardinality a
 ord x = elemToFin (inhabited a x)
 
-||| `e` is representable in terms of `b` if the cardinality of `e` is
-||| less than the `bitSize` of `b`.
+||| `e` is representable as `b` if `cardinality e <= bitSize` of `b`.
 |||
-||| That this is an interface feels like a bit of a hack.
+||| This interface captures all the constraints needed for subsequent
+||| operations.
 public export
 interface
      DecEq e
@@ -105,13 +104,13 @@ bitPosition
   -> Index {a = b}
 bitPosition x = bitsToIndex (weakenLTE (ord x) Compat)
 
-||| Concrete type for sets of finite types backed by integers
+||| Concrete type for sets of finite types backed by integers.
 export
 record BitSet e b where
   constructor Set
   values : b
 
-||| Return an empty `BitSet`
+||| Return an empty `BitSet`.
 export
 empty : Bits b => Representable e b => BitSet e b
 empty = Set zeroBits
@@ -125,7 +124,7 @@ full = case isLT (cardinality e) (bitSize) of
   -- cardinality is equal to bitsize, take the fast path
   No  _   => Set oneBits
 
-||| Insert a value into the given `BitSet`
+||| Insert a value into the given `BitSet`.
 export
 insert
   : {e : Type}
@@ -135,7 +134,7 @@ insert
   -> BitSet e b
 insert x (Set values) = Set $ setBit values (bitPosition x)
 
-||| Remove the given value from the given `BitSet`
+||| Remove the given value from the given `BitSet`.
 export
 remove
   : {e : Type}
@@ -155,7 +154,7 @@ contains
   -> Bool
 contains x (Set values) = testBit values (bitPosition x)
 
-||| Take the union over two `BitSet`s
+||| Take the union of two `BitSet`s.
 export
 union
   : {e : Type}
@@ -165,7 +164,7 @@ union
   -> BitSet e b
 union (Set x) (Set y) = Set $ x .|. y
 
-||| Take the intersection over two BitSet`s
+||| Take the intersection of two `BitSet`s.
 export
 intersect
   : {e : Type}
@@ -175,7 +174,7 @@ intersect
   -> BitSet e b
 intersect (Set x) (Set y) = Set $ x .&. y
 
-||| Take the set difference of x / y
+||| Take the set difference of x / y.
 export
 diff
   : {e : Type}
@@ -185,7 +184,7 @@ diff
   -> BitSet e b
 diff (Set x) (Set y) = Set $ x .&. complement y
 
-||| Returns the number elements in the given bitset
+||| Returns the number elements in the given bitset.
 export
 length
   : {e : Type}
@@ -194,11 +193,7 @@ length
   -> Nat
 length (Set values) = popCount values
 
-||| Convert to a list representation
-|||
-||| XXX: this implementation is particularly inefficient as it
-||| constructs and then traverses the entire value set. Surely we can
-||| do better.
+||| Convert a `BitSet e b` to a `List e`.
 export
 asList
   : {e : Type}
@@ -212,9 +207,7 @@ asList (Set values) =
   in
     map snd $ filter fst zipped
 
-||| Give us a nice string representation
-|||
-||| XXX: How do I customize this for the repl?
+||| If Show is implemented for `e`, then implement it for `BitSet e b`.
 export
 implementation
     {e : Type}
